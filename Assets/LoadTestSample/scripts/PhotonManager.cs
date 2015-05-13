@@ -9,6 +9,7 @@ public class PhotonManager : Photon.MonoBehaviour
 
     void Start()
     {
+        Application.runInBackground = true;
         mycomponents = new List<MyComponent>();
         for (int i = 0; i < 3; i++) {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
