@@ -5,28 +5,11 @@ using ExitGames.Client.Photon.LoadBalancing;
 public class MyComponent : Photon.MonoBehaviour
 {
     public MyClient Client;
+    private int id;
+    private int playerCount;
  
     void Start()
     {
-        Client = new MyClient();
- 
-        bool isConnected = Client.Connect(); 
-    }
-
-    void OnGUI()
-    {
-		GUILayout.Label(Client.State.ToString());
-        switch (Client.State)
-        {
-            case ClientState.JoinedLobby:
-                // UnityEngine.Debug.Log("JoinedLobby");
-                this.OnJoinedLobby();
-                break;
-            case ClientState.Joined:
-                // UnityEngine.Debug.Log("Joined");
-                this.OnJoinedRoom();
-                break;
-        }
     }
 
     void Update()
@@ -34,27 +17,47 @@ public class MyComponent : Photon.MonoBehaviour
         Client.Service();
     }
  
-    void OnApplicationQuit()
+    public void Connect(int id, int playerCount)
     {
-        Client.Disconnect();
+        this.id = id;
+        this.playerCount = playerCount;
+        Client = new MyClient(id);
+        Client.Connect(); 
     }
 
-    void OnJoinedLobby()
+    void OnGUI()
     {
-        // UnityEngine.Debug.Log("OnJoinedLobby");
-        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = 0 };
+        GUILayout.Space(this.id * 15);
+        GUILayout.Label("playerId: " + this.id + ", status: " + Client.State.ToString() + ", player count in rooms: " + Client.PlayersInRoomsCount.ToString() + ", room count: " + Client.RoomsCount.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString());
+        switch (Client.State)
+        {
+            case ClientState.JoinedLobby:
+                this.OnJoinedLobbyGUI();
+                break;
+            case ClientState.Joined:
+                OnJoinedGUI();
+                break;
+        }
+    }
+
+    private int count = 0;
+
+    void OnJoinedGUI()
+    {
+        if (count % 60 == 0)
+        {
+            Client.SendMove();
+            count = 0;
+        }
+        count++;
+    }
+
+    void OnJoinedLobbyGUI()
+    {
+        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.playerCount };
         bool isCreated = Client.OpJoinOrCreateRoom("room1", 0, options);
         UnityEngine.Debug.Log("join or createRoom: " + isCreated);
     }
 
-	private float time = 0;
-
-    void OnJoinedRoom()
-    {
-		time += Time.deltaTime;
-		float x = Mathf.Sin (time) / 50;
-		float z = Mathf.Cos (time) / 50;
-        transform.Translate(x,0,z);
-    }
 
 }
