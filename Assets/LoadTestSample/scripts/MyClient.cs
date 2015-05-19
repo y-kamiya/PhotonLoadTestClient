@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
 using Lite = ExitGames.Client.Photon.Lite;
@@ -8,15 +9,23 @@ public class MyClient : LB.LoadBalancingClient
 {
     // public GameObject Obj;
 
+    private int id;
+
+    private LoadTestConfig config;
+
+    private StreamWriter sw;
+
     public Vector3 Position;
 
     public int EvCount = 0;
 
-    private int id;
+    public float time = 0f;
 
-    public MyClient(int id) : base(ConnectionProtocol.Udp)
+    public MyClient(int id, LoadTestConfig config, StreamWriter sw) : base(ConnectionProtocol.Udp)
     {
         this.id = id;
+        this.config = config;
+        this.sw = sw;
 
         this.AppId = "Your App Id";
         this.MasterServerAddress = "app-jp.exitgamescloud.com:5055";
@@ -39,7 +48,7 @@ public class MyClient : LB.LoadBalancingClient
     public override void OnStatusChanged(StatusCode statusCode)
     {
         base.OnStatusChanged(statusCode);
-        UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString());
+        // UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString());
         switch (statusCode)
         {
             case StatusCode.ExceptionOnConnect:
@@ -58,12 +67,10 @@ public class MyClient : LB.LoadBalancingClient
 
     public void SendMove()
     {
-        if (this.id == 0)
-        {
-            Hashtable evData = new Hashtable();
-            evData[(byte)1] = Vector3.one;
-            this.loadBalancingPeer.OpRaiseEvent(1, evData, true, new LB::RaiseEventOptions() { Receivers = Lite::ReceiverGroup.All });
-        }
+        Hashtable evData = new Hashtable();
+        evData[(byte)1] = Vector3.one;
+        this.loadBalancingPeer.OpRaiseEvent(1, evData, true, null);
+        // this.loadBalancingPeer.OpRaiseEvent(1, evData, true, new LB::RaiseEventOptions() { Receivers = Lite::ReceiverGroup.All });
     }
 
     public override void OnEvent(EventData photonEvent)
@@ -73,9 +80,12 @@ public class MyClient : LB.LoadBalancingClient
         switch (photonEvent.Code)
         {
             case (byte)1:
+                float currentTime = Time.time;
                 Hashtable content = photonEvent.Parameters[ParameterCode.CustomEventContent] as Hashtable;
                 this.Position += (Vector3)content[(byte)1];
                 this.EvCount++;
+                this.sw.WriteLine(currentTime - this.time);
+                this.time = currentTime;
                 break;
 
             case EventCode.PropertiesChanged:

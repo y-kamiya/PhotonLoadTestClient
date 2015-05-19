@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
 using ExitGames.Client.Photon.LoadBalancing;
@@ -6,7 +7,10 @@ public class MyComponent : Photon.MonoBehaviour
 {
     public MyClient Client;
     private int id;
-    private int playerCount;
+    private LoadTestConfig config;
+    private StreamWriter sw;
+
+    private float lastSendTime = 0;
  
     void Start()
     {
@@ -17,12 +21,20 @@ public class MyComponent : Photon.MonoBehaviour
         Client.Service();
     }
  
-    public void Connect(int id, int playerCount)
+    public void Connect(int id, LoadTestConfig config)
     {
         this.id = id;
-        this.playerCount = playerCount;
-        Client = new MyClient(id);
+        this.config = config;
+        FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
+        this.sw = fi.AppendText();
+        Client = new MyClient(id, config, this.sw);
         Client.Connect(); 
+    }
+
+    void OnApplicationQuit()
+    {
+        this.sw.Flush();
+        this.sw.Close();
     }
 
     void OnGUI()
@@ -40,21 +52,23 @@ public class MyComponent : Photon.MonoBehaviour
         }
     }
 
-    private int count = 0;
-
     void OnJoinedGUI()
     {
-        if (count % 60 == 0)
+        if (this.config.SendAllPlayer || this.id == 0)
         {
-            Client.SendMove();
-            count = 0;
+            float currentTime = Time.time;
+            if (currentTime - this.lastSendTime > 1.0f / (float)this.config.MessagePerSec)
+            {
+                Client.SendMove();
+                this.sw.WriteLine(currentTime - this.lastSendTime);
+                this.lastSendTime = currentTime;
+            }
         }
-        count++;
     }
 
     void OnJoinedLobbyGUI()
     {
-        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.playerCount };
+        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.config.PlayerCount };
         bool isCreated = Client.OpJoinOrCreateRoom("room1", 0, options);
         UnityEngine.Debug.Log("join or createRoom: " + isCreated);
     }
