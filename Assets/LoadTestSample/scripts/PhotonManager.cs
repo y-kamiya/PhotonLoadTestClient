@@ -9,6 +9,7 @@ public class LoadTestConfig
     public int PlayerCount;
     public int MessagePerSec;
     public bool SendAllPlayer;
+    public int sendDataNum = 1;
 }
 
 public class PhotonManager : Photon.MonoBehaviour

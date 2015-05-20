@@ -68,7 +68,10 @@ public class MyClient : LB.LoadBalancingClient
     public void SendMove()
     {
         Hashtable evData = new Hashtable();
-        evData[(byte)1] = Vector3.one;
+        for (int i = 1; i <= this.config.sendDataNum; i++)
+        {
+            evData[(byte)i] = Vector3.one;
+        }
         this.loadBalancingPeer.OpRaiseEvent(1, evData, true, null);
         // this.loadBalancingPeer.OpRaiseEvent(1, evData, true, new LB::RaiseEventOptions() { Receivers = Lite::ReceiverGroup.All });
     }
