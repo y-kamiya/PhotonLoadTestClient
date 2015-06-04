@@ -6,10 +6,16 @@ using ExitGames.Client.Photon.LoadBalancing;
 [System.Serializable]
 public class LoadTestConfig
 {
+    public int RoomSize;
     public int PlayerCount;
     public int MessagePerSec;
-    public bool SendAllPlayer;
-    public int sendDataNum = 1;
+    public int SendDataNum;
+    public EnumSenderType SenderType;
+    public enum EnumSenderType {
+        None,
+        First,
+        All,
+    }
 }
 
 public class PhotonManager : Photon.MonoBehaviour

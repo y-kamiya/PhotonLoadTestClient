@@ -19,6 +19,26 @@ public class MyComponent : Photon.MonoBehaviour
     void Update()
     {
         Client.Service();
+
+        if (this.config.SenderType != LoadTestConfig.EnumSenderType.None)
+        {
+            sendMove();
+        }
+    }
+
+    private void sendMove()
+    {
+        if (this.config.SenderType == LoadTestConfig.EnumSenderType.All || 
+                this.config.SenderType == LoadTestConfig.EnumSenderType.First && this.id == 0)
+        {
+            float currentTime = Time.time;
+            if (currentTime - this.lastSendTime > 1.0f / (float)this.config.MessagePerSec)
+            {
+                Client.SendMove();
+                this.sw.WriteLine(currentTime - this.lastSendTime);
+                this.lastSendTime = currentTime;
+            }
+        }
     }
  
     public void Connect(int id, LoadTestConfig config)
@@ -47,30 +67,14 @@ public class MyComponent : Photon.MonoBehaviour
                 this.OnJoinedLobbyGUI();
                 break;
             case ClientState.Joined:
-                OnJoinedGUI();
                 break;
-        }
-    }
-
-    void OnJoinedGUI()
-    {
-        if (this.config.SendAllPlayer || this.id == 0)
-        {
-            float currentTime = Time.time;
-            if (currentTime - this.lastSendTime > 1.0f / (float)this.config.MessagePerSec)
-            {
-                Client.SendMove();
-                this.sw.WriteLine(currentTime - this.lastSendTime);
-                this.lastSendTime = currentTime;
-            }
         }
     }
 
     void OnJoinedLobbyGUI()
     {
-        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.config.PlayerCount };
+        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
         bool isCreated = Client.OpJoinOrCreateRoom("room1", 0, options);
-        UnityEngine.Debug.Log("join or createRoom: " + isCreated);
     }
 
 
