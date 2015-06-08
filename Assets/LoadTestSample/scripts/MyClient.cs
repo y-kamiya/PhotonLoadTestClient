@@ -33,6 +33,7 @@ public class MyClient : LB.LoadBalancingClient
 
     public override void OnOperationResponse(OperationResponse operationResponse)
     {
+        UnityEngine.Debug.Log("OnOperationResponse: " + operationResponse.OperationCode + ", DebugMsg: " + operationResponse.DebugMessage);
         base.OnOperationResponse(operationResponse);
         // this.DebugReturn(DebugLevel.ERROR, operationResponse.ToStringFull());
         switch (operationResponse.OperationCode)
@@ -48,7 +49,7 @@ public class MyClient : LB.LoadBalancingClient
     public override void OnStatusChanged(StatusCode statusCode)
     {
         base.OnStatusChanged(statusCode);
-        // UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString());
+        UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString() + ", DisconnectedCause: " + this.DisconnectedCause);
         switch (statusCode)
         {
             case StatusCode.ExceptionOnConnect:
