@@ -223,14 +223,17 @@ namespace ExitGames.Client.Photon.LoadBalancing
             
             if (createIfNotExists)
             {
-                op[ParameterCode.JoinMode] = (byte)JoinMode.CreateIfNotExists;
+                //op[ParameterCode.JoinMode] = (byte)JoinMode.CreateIfNotExists;
+                op[ParameterCode.CreateIfNotExists] = true;
                 // TODO: Add lobby here
             }
+            /*
             if (actorId != 0)
             {
                 op[ParameterCode.JoinMode] = (byte)JoinMode.Rejoin;
                 op[ParameterCode.ActorNr] = actorId;
             }
+            */
 
             if (onGameServer)
             {
@@ -1087,11 +1090,11 @@ namespace ExitGames.Client.Photon.LoadBalancing
         public const byte ClientAuthenticationParams = 216;
 
         /// <summary>(215) Makes the server create a room if it doesn't exist. OpJoin uses this to always enter a room, unless it exists and is full/closed.</summary>
-        // public const byte CreateIfNotExists = 215;
+        public const byte CreateIfNotExists = 215;
 
         /// <summary>(215) The JoinMode enum defines which variant of joining a room will be executed: Join only if available, create if not exists or re-join.</summary>
         /// <remarks>Replaces CreateIfNotExists which was only a bool-value.</remarks>
-        public const byte JoinMode = 215;
+        //public const byte JoinMode = 215;
 
         /// <summary>(214) This key's (string or byte[]) value provides parameters sent to the custom authentication service setup in Photon Dashboard. Used in OpAuthenticate</summary>
         public const byte ClientAuthenticationData = 214;
