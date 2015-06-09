@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
-using ExitGames.Client.Photon.LoadBalancing;
+using LB = ExitGames.Client.Photon.LoadBalancing;
  
 public class MyComponent : Photon.MonoBehaviour
 {
@@ -12,8 +12,14 @@ public class MyComponent : Photon.MonoBehaviour
 
     private float lastSendTime = 0;
  
-    void Start()
+    public void Connect(int id, LoadTestConfig config)
     {
+        this.id = id;
+        this.config = config;
+        FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
+        this.sw = fi.AppendText();
+        Client = new MyClient(id, config, this.sw);
+        Client.Connect(); 
     }
 
     void Update()
@@ -41,16 +47,6 @@ public class MyComponent : Photon.MonoBehaviour
         }
     }
  
-    public void Connect(int id, LoadTestConfig config)
-    {
-        this.id = id;
-        this.config = config;
-        FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
-        this.sw = fi.AppendText();
-        Client = new MyClient(id, config, this.sw);
-        Client.Connect(); 
-    }
-
     void OnApplicationQuit()
     {
         this.sw.Flush();
@@ -63,18 +59,18 @@ public class MyComponent : Photon.MonoBehaviour
         GUILayout.Label("playerId: " + this.id + ", status: " + Client.State.ToString() + ", player count in rooms: " + Client.PlayersInRoomsCount.ToString() + ", room count: " + Client.RoomsCount.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString());
         switch (Client.State)
         {
-            case ClientState.JoinedLobby:
+            case LB.ClientState.JoinedLobby:
                 this.OnJoinedLobbyGUI();
                 break;
-            case ClientState.Joined:
+            case LB.ClientState.Joined:
                 break;
         }
     }
 
     void OnJoinedLobbyGUI()
     {
-        ExitGames.Client.Photon.LoadBalancing.RoomOptions options = new ExitGames.Client.Photon.LoadBalancing.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
-        bool isCreated = Client.OpJoinOrCreateRoom("room1", 0, options);
+        LB.RoomOptions options = new LB.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
+        Client.OpJoinOrCreateRoom(this.config.RoomName, 0, options);
     }
 
 

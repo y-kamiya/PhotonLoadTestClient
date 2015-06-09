@@ -27,8 +27,8 @@ public class MyClient : LB.LoadBalancingClient
         this.config = config;
         this.sw = sw;
 
-        this.AppId = "Your App Id";
-        this.MasterServerAddress = "app-jp.exitgamescloud.com:5055";
+        this.AppId = config.AppId;
+        this.MasterServerAddress = config.MasterServerAddress;
     }
 
     public override void OnOperationResponse(OperationResponse operationResponse)
