@@ -1,9 +1,8 @@
 using System.IO;
 using UnityEngine;
-using ExitGames.Client.Photon;
 using LB = ExitGames.Client.Photon.LoadBalancing;
  
-public class MyComponent : Photon.MonoBehaviour
+public class MyComponent : MonoBehaviour
 {
     public MyClient Client;
     private int id;

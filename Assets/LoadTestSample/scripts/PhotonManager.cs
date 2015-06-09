@@ -22,7 +22,7 @@ public class LoadTestConfig
     }
 }
 
-public class PhotonManager : Photon.MonoBehaviour
+public class PhotonManager : MonoBehaviour
 {
     private List<MyComponent> mycomponents;
 

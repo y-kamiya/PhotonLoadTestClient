@@ -1,7 +1,9 @@
 using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
+using ExitGames.Client.Photon.Lite;
 using Lite = ExitGames.Client.Photon.Lite;
+using ExitGames.Client.Photon.LoadBalancing;
 using LB = ExitGames.Client.Photon.LoadBalancing;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
