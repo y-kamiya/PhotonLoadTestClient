@@ -16,9 +16,11 @@ public class MyComponent : Photon.MonoBehaviour
     {
         this.id = id;
         this.config = config;
+
         FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
         this.sw = fi.AppendText();
-        Client = new MyClient(id, config, this.sw);
+
+        Client = new MyClient(config, this.sw);
         Client.Connect(); 
     }
 
@@ -57,21 +59,6 @@ public class MyComponent : Photon.MonoBehaviour
     {
         GUILayout.Space(this.id * 15);
         GUILayout.Label("playerId: " + this.id + ", status: " + Client.State.ToString() + ", player count in rooms: " + Client.PlayersInRoomsCount.ToString() + ", room count: " + Client.RoomsCount.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString());
-        switch (Client.State)
-        {
-            case LB.ClientState.JoinedLobby:
-                this.OnJoinedLobbyGUI();
-                break;
-            case LB.ClientState.Joined:
-                break;
-        }
     }
-
-    void OnJoinedLobbyGUI()
-    {
-        LB.RoomOptions options = new LB.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
-        Client.OpJoinOrCreateRoom(this.config.RoomName, 0, options);
-    }
-
 
 }

@@ -7,8 +7,6 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class MyClient : LB.LoadBalancingClient
 {
-    // public GameObject Obj;
-
     private int id;
 
     private LoadTestConfig config;
@@ -19,11 +17,10 @@ public class MyClient : LB.LoadBalancingClient
 
     public int EvCount = 0;
 
-    public float time = 0f;
+    public float lastReceivedTime = 0f;
 
-    public MyClient(int id, LoadTestConfig config, StreamWriter sw) : base(ConnectionProtocol.Udp)
+    public MyClient(LoadTestConfig config, StreamWriter sw) : base(ConnectionProtocol.Udp)
     {
-        this.id = id;
         this.config = config;
         this.sw = sw;
 
@@ -41,14 +38,21 @@ public class MyClient : LB.LoadBalancingClient
 
     public override void OnOperationResponse(OperationResponse operationResponse)
     {
-        UnityEngine.Debug.Log("OnOperationResponse: " + operationResponse.OperationCode + ", DebugMsg: " + operationResponse.DebugMessage);
+        // UnityEngine.Debug.Log("OnOperationResponse: " + operationResponse.OperationCode + ", DebugMsg: " + operationResponse.DebugMessage);
         base.OnOperationResponse(operationResponse);
-        // this.DebugReturn(DebugLevel.ERROR, operationResponse.ToStringFull());
         switch (operationResponse.OperationCode)
         {
             case OperationCode.JoinGame:
                 {
-                    this.OnJoinedRoom();
+                    if (this.State == LB::ClientState.Joined)
+                    {
+                    }
+                    break;
+                }
+            case OperationCode.JoinLobby:
+                {
+                    LB.RoomOptions options = new LB.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
+                    this.OpJoinOrCreateRoom(this.config.RoomName, 0, options);
                     break;
                 }
         }
@@ -57,20 +61,12 @@ public class MyClient : LB.LoadBalancingClient
     public override void OnStatusChanged(StatusCode statusCode)
     {
         base.OnStatusChanged(statusCode);
-        UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString() + ", DisconnectedCause: " + this.DisconnectedCause);
+        // UnityEngine.Debug.Log("OnStatusChanged: " + statusCode.ToString() + ", DisconnectedCause: " + this.DisconnectedCause);
         switch (statusCode)
         {
             case StatusCode.ExceptionOnConnect:
                 Debug.LogWarning("Exception on connection level. Is the server running? Is the address (" + this.MasterServerAddress+ ") reachable?");
                 break;
-        }
-    }
-
-    void OnJoinedRoom()
-    {
-        if (this.State == LB::ClientState.Joined)
-        {
-            // Obj = this.Instantiate("cube", new Vector3(0,0,0), Quaternion.identity, 0, null);
         }
     }
 
@@ -96,13 +92,8 @@ public class MyClient : LB.LoadBalancingClient
                 Hashtable content = photonEvent.Parameters[ParameterCode.CustomEventContent] as Hashtable;
                 this.Position += (Vector3)content[(byte)1];
                 this.EvCount++;
-                this.sw.WriteLine(currentTime - this.time);
-                this.time = currentTime;
-                break;
-
-            case EventCode.PropertiesChanged:
-                var data = photonEvent.Parameters[ParameterCode.Properties] as Hashtable;
-                DebugReturn(DebugLevel.ALL, "got something: " + (data["data"] as string));
+                this.sw.WriteLine(currentTime - this.lastReceivedTime);
+                this.lastReceivedTime = currentTime;
                 break;
         }
     }

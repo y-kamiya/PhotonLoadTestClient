@@ -54,7 +54,7 @@ public class PhotonManager : Photon.MonoBehaviour
         }
         if (String.IsNullOrEmpty(this.config.MasterServerAddress))
         {
-            this.config.MasterServerAddress = "127.0.0.1:5055";
+            this.config.MasterServerAddress = "app-jp.exitgamescloud.com:5055";
         }
         if (String.IsNullOrEmpty(this.config.RoomName))
         {
