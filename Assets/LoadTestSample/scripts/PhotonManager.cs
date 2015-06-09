@@ -38,11 +38,11 @@ public class PhotonManager : MonoBehaviour
     void Start()
     {
         mycomponents = new List<MyComponent>();
-        for (int i = 0; i < this.config.PlayerCount; i++) {
+        for (int id = 0; id < this.config.PlayerCount; id++) {
             GameObject go = new GameObject();
-            MyComponent comp = go.AddComponent<MyComponent>();
-            mycomponents.Add(comp);
-            comp.Connect(i, this.config);
+            MyComponent component = go.AddComponent<MyComponent>();
+            mycomponents.Add(component);
+            component.Connect(id, this.config);
         }
     }
 

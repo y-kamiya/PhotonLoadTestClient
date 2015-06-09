@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
-using ExitGames.Client.Photon.Lite;
 using Lite = ExitGames.Client.Photon.Lite;
 using ExitGames.Client.Photon.LoadBalancing;
 using LB = ExitGames.Client.Photon.LoadBalancing;
@@ -10,15 +9,11 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 public class MyClient : LB.LoadBalancingClient
 {
     private int id;
-
     private LoadTestConfig config;
-
     private StreamWriter sw;
 
     public Vector3 Position;
-
     public int EvCount = 0;
-
     public float lastReceivedTime = 0f;
 
     public MyClient(LoadTestConfig config, StreamWriter sw) : base(ConnectionProtocol.Udp)
@@ -48,6 +43,7 @@ public class MyClient : LB.LoadBalancingClient
                 {
                     if (this.State == LB::ClientState.Joined)
                     {
+                        // action in room
                     }
                     break;
                 }

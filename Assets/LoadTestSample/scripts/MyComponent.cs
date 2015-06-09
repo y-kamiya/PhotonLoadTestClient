@@ -16,6 +16,7 @@ public class MyComponent : MonoBehaviour
         this.id = id;
         this.config = config;
 
+        // settings for send/receive log
         FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
         this.sw = fi.AppendText();
 
@@ -57,7 +58,15 @@ public class MyComponent : MonoBehaviour
     void OnGUI()
     {
         GUILayout.Space(this.id * 15);
-        GUILayout.Label("playerId: " + this.id + ", status: " + Client.State.ToString() + ", player count in rooms: " + Client.PlayersInRoomsCount.ToString() + ", room count: " + Client.RoomsCount.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString());
+        string output = "playerId: " + this.id + ", status: " + Client.State.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString();
+        if (Client.State == LB.ClientState.Joined)
+        {
+            GUILayout.Label(output + ", player count in rooms: " + Client.CurrentRoom.PlayerCount.ToString());
+        }
+        else
+        {
+            GUILayout.Label(output);
+        }
     }
 
 }
