@@ -31,6 +31,14 @@ public class MyClient : LB.LoadBalancingClient
         this.MasterServerAddress = config.MasterServerAddress;
     }
 
+    public override bool Connect()
+    {
+        this.CustomAuthenticationValues = new LB.AuthenticationValues();
+        this.CustomAuthenticationValues.SetAuthParameters("bbb", "lMDODEftcnGuQQJOEEZgCw==");
+        this.UserId = "YmJi";
+        return base.Connect();
+    }
+
     public override void OnOperationResponse(OperationResponse operationResponse)
     {
         UnityEngine.Debug.Log("OnOperationResponse: " + operationResponse.OperationCode + ", DebugMsg: " + operationResponse.DebugMessage);
