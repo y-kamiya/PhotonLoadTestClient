@@ -5,18 +5,22 @@ using LB = ExitGames.Client.Photon.LoadBalancing;
 public class MyComponent : MonoBehaviour
 {
     public MyClient Client;
-    private int roomId;
     private int playerId;
     private LoadTestConfig config;
     private StreamWriter sw;
+    private int displayId;
+
+    private int lastEvCount = 0;
+    private float lastUpdateTime = 0;
+    private float evRatio = 0;
 
     private float lastSendTime = 0;
  
     public void Connect(int roomId, string roomName, int playerId, LoadTestConfig config)
     {
-        this.roomId = roomId;
         this.playerId = playerId;
         this.config = config;
+        this.displayId = roomId * this.config.PlayerCount + playerId;
 
         // settings for send/receive log
         FileInfo fi = new FileInfo(Application.dataPath + "/LoadTestLog/" + roomName + "/player" + playerId + ".log");
@@ -59,10 +63,18 @@ public class MyComponent : MonoBehaviour
 
     void OnGUI()
     {
-        int displayId = this.roomId * this.config.PlayerCount + this.playerId;
-        GUILayout.Space(displayId * 15);
+        GUILayout.Space(this.displayId * 15);
 
-        string output = "playerId: " + this.playerId + ", status: " + Client.State.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString();
+        int currentEvCount = Client.EvCount;
+        float currentTime = Time.time;
+        if (currentTime - this.lastUpdateTime > 1.0f)
+        {
+            this.evRatio = (float)(currentEvCount - this.lastEvCount) / (currentTime - this.lastUpdateTime);
+            this.lastEvCount = currentEvCount;
+            this.lastUpdateTime = currentTime;
+        }
+
+        string output = "playerId: " + this.playerId + ", status: " + Client.State.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString() + ", EvRatio:" + this.evRatio;
         if (Client.State == LB.ClientState.Joined)
         {
             LB::Room room = Client.CurrentRoom;
