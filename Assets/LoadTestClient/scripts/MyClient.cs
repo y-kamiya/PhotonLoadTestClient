@@ -8,6 +8,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class MyClient : LB.LoadBalancingClient
 {
+    private string roomName;
     private int id;
     private LoadTestConfig config;
     private StreamWriter sw;
@@ -16,9 +17,10 @@ public class MyClient : LB.LoadBalancingClient
     public int EvCount = 0;
     public float lastReceivedTime = 0f;
 
-    public MyClient(LoadTestConfig config, StreamWriter sw) : base(ConnectionProtocol.Udp)
+    public MyClient(LoadTestConfig config, string roomName, StreamWriter sw) : base(ConnectionProtocol.Udp)
     {
         this.config = config;
+        this.roomName = roomName;
         this.sw = sw;
 
         this.AppId = config.AppId;
@@ -50,7 +52,7 @@ public class MyClient : LB.LoadBalancingClient
             case OperationCode.JoinLobby:
                 {
                     LB.RoomOptions options = new LB.RoomOptions() { MaxPlayers = (byte)this.config.RoomSize };
-                    this.OpJoinOrCreateRoom(this.config.RoomName, 0, options);
+                    this.OpJoinOrCreateRoom(this.roomName, 0, options);
                     break;
                 }
         }

@@ -5,22 +5,24 @@ using LB = ExitGames.Client.Photon.LoadBalancing;
 public class MyComponent : MonoBehaviour
 {
     public MyClient Client;
-    private int id;
+    private int roomId;
+    private int playerId;
     private LoadTestConfig config;
     private StreamWriter sw;
 
     private float lastSendTime = 0;
  
-    public void Connect(int id, LoadTestConfig config)
+    public void Connect(int roomId, string roomName, int playerId, LoadTestConfig config)
     {
-        this.id = id;
+        this.roomId = roomId;
+        this.playerId = playerId;
         this.config = config;
 
         // settings for send/receive log
-        FileInfo fi = new FileInfo(Application.dataPath + "/player" + id + ".log");
+        FileInfo fi = new FileInfo(Application.dataPath + "/LoadTestLog/" + roomName + "/player" + playerId + ".log");
         this.sw = fi.AppendText();
 
-        Client = new MyClient(config, this.sw);
+        Client = new MyClient(config, roomName, this.sw);
         Client.Connect(); 
     }
 
@@ -37,7 +39,7 @@ public class MyComponent : MonoBehaviour
     private void sendMove()
     {
         if (this.config.SenderType == LoadTestConfig.EnumSenderType.All || 
-                this.config.SenderType == LoadTestConfig.EnumSenderType.First && this.id == 0)
+                this.config.SenderType == LoadTestConfig.EnumSenderType.First && this.playerId == 0)
         {
             float currentTime = Time.time;
             if (currentTime - this.lastSendTime > 1.0f / (float)this.config.MessagePerSec)
@@ -57,11 +59,14 @@ public class MyComponent : MonoBehaviour
 
     void OnGUI()
     {
-        GUILayout.Space(this.id * 15);
-        string output = "playerId: " + this.id + ", status: " + Client.State.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString();
+        int displayId = this.roomId * this.config.PlayerCount + this.playerId;
+        GUILayout.Space(displayId * 15);
+
+        string output = "playerId: " + this.playerId + ", status: " + Client.State.ToString() + ", position: " + Client.Position.ToString() + " EvCount: " + Client.EvCount.ToString();
         if (Client.State == LB.ClientState.Joined)
         {
-            GUILayout.Label(output + ", player count in rooms: " + Client.CurrentRoom.PlayerCount.ToString());
+            LB::Room room = Client.CurrentRoom;
+            GUILayout.Label(output + ", roomName: " + room.Name + ", player count: " + room.PlayerCount.ToString());
         }
         else
         {

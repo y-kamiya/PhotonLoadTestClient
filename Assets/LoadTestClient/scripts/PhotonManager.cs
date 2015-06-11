@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using ExitGames.Client.Photon.LoadBalancing;
@@ -9,9 +10,10 @@ public class LoadTestConfig
 {
     public string AppId;
     public string MasterServerAddress;
-    public string RoomName;
     public string PlayerName;
     public string EncryptedString;
+    public string RoomName;
+    public int RoomCount;
     public int RoomSize;
     public int PlayerCount;
     public int MessagePerSec;
@@ -40,12 +42,34 @@ public class PhotonManager : MonoBehaviour
     void Start()
     {
         mycomponents = new List<MyComponent>();
-        for (int id = 0; id < this.config.PlayerCount; id++) {
-            GameObject go = new GameObject();
-            MyComponent component = go.AddComponent<MyComponent>();
-            mycomponents.Add(component);
-            component.Connect(id, this.config);
+        for (int roomId = 0; roomId < this.config.RoomCount; roomId++) {
+            string roomName = this.getRoomName(roomId);
+            this.createLogDirectory(roomName);
+            for (int playerId = 0; playerId < this.config.PlayerCount; playerId++) {
+                GameObject go = new GameObject();
+                MyComponent component = go.AddComponent<MyComponent>();
+                mycomponents.Add(component);
+                component.Connect(roomId, roomName, playerId, this.config);
+            }
         }
+    }
+
+    private string getRoomName(int roomId)
+    {
+        if (this.config.RoomCount == 1)
+        {
+            return this.config.RoomName;
+        }
+        return this.config.RoomName + roomId.ToString();
+    }
+
+    private void createLogDirectory(string roomName)
+    {
+        string path = Application.dataPath + "/LoadTestLog/" + roomName;
+        if (!Directory.Exists(path)) 
+        {
+            System.IO.Directory.CreateDirectory(path);
+        } 
     }
 
     private void validateParameter()
