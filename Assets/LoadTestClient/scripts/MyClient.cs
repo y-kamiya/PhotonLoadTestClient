@@ -28,8 +28,8 @@ public class MyClient : LB.LoadBalancingClient
     public override bool Connect()
     {
         this.CustomAuthenticationValues = new LB.AuthenticationValues();
-        this.CustomAuthenticationValues.SetAuthParameters("bbb", "lMDODEftcnGuQQJOEEZgCw==");
-        this.UserId = "YmJi";
+        this.CustomAuthenticationValues.SetAuthParameters(this.config.PlayerName, this.config.EncryptedString);
+        this.UserId = this.config.PlayerName; 
         return base.Connect();
     }
 
