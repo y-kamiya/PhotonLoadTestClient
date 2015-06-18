@@ -11,13 +11,17 @@ public class MyClient : LB.LoadBalancingClient
     private string roomName;
     private int id;
     private LoadTestConfig config;
-    private StreamWriter sw;
+    private StreamWriter[] sw;
 
     public Vector3 Position;
     public int EvCount = 0;
     public float lastReceivedTime = 0f;
-
-    public MyClient(LoadTestConfig config, string roomName, StreamWriter sw) : base(ConnectionProtocol.Udp)
+    public float EvRatio = 0f;
+    private int lastEvCount = 0;
+    private float lastEvRatioUpdateTime = 0f;
+    private float lastSendTime = 0f;
+ 
+    public MyClient(LoadTestConfig config, string roomName, StreamWriter[] sw) : base(ConnectionProtocol.Udp)
     {
         this.config = config;
         this.roomName = roomName;
@@ -72,6 +76,18 @@ public class MyClient : LB.LoadBalancingClient
 
     public void SendMove()
     {
+        float currentTime = Time.time;
+        if (currentTime - this.lastSendTime > 1.0f / (float)this.config.MessagePerSec)
+        {
+            // float a = this.lastSendTime;
+            this.Send();
+            this.sw[0].WriteLine(currentTime - this.lastSendTime);
+            this.lastSendTime = currentTime;
+        }
+    }
+
+    private void Send()
+    {
         Hashtable evData = new Hashtable();
         for (int i = 1; i <= this.config.SendDataNum; i++)
         {
@@ -92,9 +108,20 @@ public class MyClient : LB.LoadBalancingClient
                 Hashtable content = photonEvent.Parameters[ParameterCode.CustomEventContent] as Hashtable;
                 this.Position += (Vector3)content[(byte)1];
                 this.EvCount++;
-                this.sw.WriteLine(currentTime - this.lastReceivedTime);
+                this.updateEvRatio(this.EvCount, currentTime);
+                this.sw[1].WriteLine(currentTime - this.lastReceivedTime);
                 this.lastReceivedTime = currentTime;
                 break;
+        }
+    }
+
+    private void updateEvRatio(int currentEvCount, float currentTime)
+    {
+        if (1.0f < currentTime - this.lastEvRatioUpdateTime)
+        {
+            this.EvRatio = (float)(currentEvCount - this.lastEvCount) / (currentTime - this.lastEvRatioUpdateTime);
+            this.lastEvCount = currentEvCount;
+            this.lastEvRatioUpdateTime = currentTime;
         }
     }
 }
