@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEngine;
 using ExitGames.Client.Photon;
@@ -26,9 +27,6 @@ public class MyClient : LB.LoadBalancingClient
         this.config = config;
         this.roomName = roomName;
         this.sw = sw;
-
-        this.AppId = config.AppId;
-        this.MasterServerAddress = config.MasterServerAddress;
     }
 
     public override bool Connect()
@@ -36,6 +34,13 @@ public class MyClient : LB.LoadBalancingClient
         this.CustomAuthenticationValues = new LB.AuthenticationValues();
         this.CustomAuthenticationValues.SetAuthParameters(this.config.PlayerName, this.config.EncryptedString);
         this.UserId = this.config.PlayerName; 
+        this.AppId = this.config.AppId;
+        this.MasterServerAddress = this.config.MasterServerAddress;
+
+        if (!String.IsNullOrEmpty(config.TargetAppVersion) && !String.IsNullOrEmpty(config.TargetAppVersionPun))
+        {
+            this.AppVersion = string.Format("{0}_{1}", config.TargetAppVersion, config.TargetAppVersionPun);
+        }
         return base.Connect();
     }
 

@@ -10,6 +10,8 @@ public class LoadTestConfig
 {
     public string AppId;
     public string MasterServerAddress;
+    public string TargetAppVersion;
+    public string TargetAppVersionPun;
     public string PlayerName;
     public string EncryptedString;
     public string RoomName;
@@ -89,6 +91,10 @@ public class PhotonManager : MonoBehaviour
         if (String.IsNullOrEmpty(this.config.PlayerName))
         {
             this.config.PlayerName = "defaultPlayer";
+        }
+        if (this.config.RoomCount == 0)
+        {
+            this.config.RoomCount = 1;
         }
 
     }
