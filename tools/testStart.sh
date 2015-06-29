@@ -19,6 +19,37 @@ doScp=${3:-0}
 
 filename=`basename $source_path`
 
+# functions
+function executeOnAllTargets()
+{
+    for target in ${targets[@]}
+    do
+        server=`echo $target | cut -d: -f1`
+        dir=`echo $target | cut -d: -f2`
+        case $1 in
+            "testStart")
+                _command="
+                    echo; echo test start on $server;
+                    rm -rf ${dir}/${filename}_Data/LoadTestLog;
+                    timeout $timer ./${dir}/${filename}.x86_64 & jobs -p > /tmp/${filename}.pid;
+                ";;
+            "cleanup")
+                _command="
+                    echo; echo cleanup $server;
+                    cat /tmp/${filename}.pid | xargs kill;
+                    rm /tmp/${filename}.pid;
+                ";;
+            *)
+                echo "undefined command: $1"
+                exit 2
+        esac
+        ssh $server $_command &
+    done
+}
+
+
+
+# main logic
 if [ $doScp -eq 1 ]; then
     for target in ${targets[@]}
     do
@@ -26,12 +57,13 @@ if [ $doScp -eq 1 ]; then
     done
 fi
 
-for target in ${targets[@]}
-do
-    server=`echo $target | cut -d: -f1`
-    dir=`echo $target | cut -d: -f2`
-    ssh $server "echo; echo SSH to \"$server\"; rm -rf ${dir}/${filename}_Data/LoadTestLog; timeout $timer ./${dir}/${filename}.x86_64" &
-done
+trap 'executeOnAllTargets "cleanup"; exit 1' 1 2 3 15
 
+executeOnAllTargets "testStart"
 wait
+
+executeOnAllTargets "cleanup"
+wait
+
 echo "all process finished"
+
